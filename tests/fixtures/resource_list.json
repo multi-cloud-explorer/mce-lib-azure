@@ -1,0 +1,25 @@
+{
+    "value": [
+        {
+            "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Cloud-Shell/providers/Microsoft.Storage/storageAccounts/xxxcloudshellsa01",
+            "name": "xxxcloudshellsa01",
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "location": "westeurope",
+            "tags": {
+                "ms-resource-usage": "azure-cloud-shell"
+            }
+        },
+        {
+            "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/xxx-CSP-Reporting-01/providers/Microsoft.Automation/automationAccounts/xxx-csp-reporting-autoaccount",
+            "name": "xxx-csp-reporting-autoaccount",
+            "type": "Microsoft.Automation/automationAccounts",
+            "location": "westeurope",
+            "tags": {}
+        }
+    ]
+}

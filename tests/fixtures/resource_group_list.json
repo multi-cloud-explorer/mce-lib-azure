@@ -1,0 +1,21 @@
+{
+    "value": [
+        {
+            "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/MY_RG",
+            "name": "MY_RG",
+            "location": "francecentral",
+            "tags": {},
+            "properties": {
+                "provisioningState": "Succeeded"
+            }
+        },
+        {
+            "id": "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/Cloud-Shell",
+            "name": "Cloud-Shell",
+            "location": "westeurope",
+            "properties": {
+                "provisioningState": "Succeeded"
+            }
+        }
+    ]
+}
