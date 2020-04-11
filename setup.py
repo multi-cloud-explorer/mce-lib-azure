@@ -1,3 +1,5 @@
+import os
+
 from setuptools import setup, find_packages
 
 install_requires = [
@@ -14,8 +16,6 @@ tests_requires = [
     'pytest',
     'pytest-cov',
     'pytest-pep8',
-    'pytest-timeout',
-    'pytest-instafail',
     'pytest-vcr',
     'vcrpy',
     'bandit',
@@ -30,23 +30,25 @@ dev_requires = [
     'ipython',
     'autopep8',
     'black',
-]
-
-doc_requires = [
-    'Sphinx',
-    'sphinx_rtd_theme',
+    'wheel',
 ]
 
 extras_requires = {
     'tests': tests_requires,
     'dev': dev_requires,
-    'doc': doc_requires,
 }
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+with open(os.path.join(here, 'README.md'), encoding='utf-8') as f:
+    long_description = f.read()
 
 setup(
     name='mce-lib-azure',
     version="0.1.0",
     description='MCE - SDK for Azure',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     url='https://github.com/multi-cloud-explorer/mce-lib-azure.git',
     license='GPLv3+',
     packages=find_packages(),
