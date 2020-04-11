@@ -1,7 +1,8 @@
 # Cloud Explorer - Azure
 
-Librairie indépendante pour récupérer la liste des ressources d'une souscription Azure.
+Librairie indépendante pour télécharger la liste des ressources d'une souscription Azure.
 
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![Build Status](https://travis-ci.org/multi-cloud-explorer/mce-lib-azure.svg)](https://travis-ci.org/multi-cloud-explorer/mce-lib-azure)
 [![Coverage Status](https://coveralls.io/repos/multi-cloud-explorer/mce-lib-azure/badge.svg?branch=master&service=github)](https://coveralls.io/github/multi-cloud-explorer/mce-lib-azure?branch=master)
 [![Code Health](https://landscape.io/github/multi-cloud-explorer/mce-lib-azure/master/landscape.svg?style=flat)](https://landscape.io/github/multi-cloud-explorer/mce-lib-azure/master)
