@@ -21,16 +21,20 @@ DEFAULT_USER = config('MCE_AZURE_USER', default=None)
 DEFAULT_PASSWORD = config('MCE_AZURE_PASSWORD', default=None)
 
 CURRENT = os.path.abspath(os.path.dirname(__file__))
-PROVIDERS_FILEPATH = config('MCE_PROVIDERS_FILEPATH', default=os.path.join(CURRENT, 'azure-providers.json'))
+PROVIDERS_FILEPATH = config(
+    'MCE_PROVIDERS_FILEPATH', default=os.path.join(CURRENT, 'azure-providers.json')
+)
 
 PROVIDERS = None
 
+
 def get_ratelimit_header(headers):
-    for k,v in headers.items():
+    for k, v in headers.items():
         if k.startswith("x-ms-ratelimit-remaining"):
             return k, v
 
     return None, None
+
 
 def load_providers(filepath=PROVIDERS_FILEPATH):
     global PROVIDERS
@@ -40,37 +44,42 @@ def load_providers(filepath=PROVIDERS_FILEPATH):
 
     with open(filepath) as fp:
         _providers = json.load(fp)
-        PROVIDERS = {k.lower():v for k,v in _providers.items()}
+        PROVIDERS = {k.lower(): v for k, v in _providers.items()}
     if not PROVIDERS:
-         raise Exception("PROVIDERS empty")
+        raise Exception("PROVIDERS empty")
 
     logger.info(f"user provider filepath: {filepath}")
 
     return PROVIDERS
 
+
 load_providers()
+
 
 def get_azure_base_url(is_china=False):
     if is_china:
         return "https://management.chinacloudapi.cn"
     return "https://management.azure.com"
-    
+
+
 def get_api_version(resource_id):
     asset_split = resource_id.split('/')
     asset_type = f"{asset_split[6]}/{asset_split[7]}"
     api_version = PROVIDERS.get(asset_type.lower())
-    
+
     if not api_version:
         raise Exception(f"api_version not found for type {asset_type}")
-    
+
     return api_version
+
 
 def get_session(token=None):
     session = requests.Session()
     session.headers['authorization'] = 'Bearer %s' % token
     return session
 
-# TODO: retry paramètrable 
+
+# TODO: retry paramètrable
 # TODO: renvoyer le ratelimit
 @retry(tries=3, sleep_time=2)
 def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
@@ -80,9 +89,9 @@ def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
 
     @see: https://docs.microsoft.com/en-us/rest/api/resources/resources/getbyid
     """
-    
+
     # TODO: voir si valable partout: &$expand=resourceTypes/aliases
-    
+
     base_url = get_azure_base_url(is_china=is_china)
     api_version = get_api_version(resource_id)
     resource_id = resource_id.lstrip('/')
@@ -117,6 +126,8 @@ def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
       "tenantType": "AAD"
     },
 """
+
+
 def get_tenant_list(session=None, token=None):
     """
     1 tenant pour plusieurs souscription
@@ -149,6 +160,8 @@ def get_tenant_list(session=None, token=None):
       }
     },
 """
+
+
 def get_subscriptions_list(session=None, token=None):
     """Get Subscriptions List
 
@@ -156,12 +169,15 @@ def get_subscriptions_list(session=None, token=None):
 
     """
     # https://docs.microsoft.com/en-us/rest/api/resources/subscriptions/listlocations
-    #api_version = PROVIDERS.get("Microsoft.Resources/resources".lower())
+    # api_version = PROVIDERS.get("Microsoft.Resources/resources".lower())
 
     raise NotImplementedError()
 
+
 # TODO: filter type
-def get_resources_list(subscription_id, session=None, token=None, is_china=False, includes=PROVIDERS):
+def get_resources_list(
+    subscription_id, session=None, token=None, is_china=False, includes=PROVIDERS
+):
     """Get Resources List
 
     @see: https://docs.microsoft.com/en-us/rest/api/resources/resources/list
@@ -215,15 +231,18 @@ Tenant	reads	12000
 Tenant	writes	1200
 """
 
+
 def get_resourcegroups_list(subscription_id, session=None, token=None, is_china=False):
     """Get ResourceGroup List
     
     https://docs.microsoft.com/en-us/rest/api/resources/resourcegroups/list
     """
-    
+
     base_url = get_azure_base_url(is_china=is_china)
 
-    api_version = PROVIDERS.get("Microsoft.Resources/subscriptions/resourceGroups".lower())
+    api_version = PROVIDERS.get(
+        "Microsoft.Resources/subscriptions/resourceGroups".lower()
+    )
 
     url = f"{base_url}/subscriptions/{subscription_id}/resourcegroups?api-version={api_version}"
     session = session or get_session(token=token)
@@ -238,26 +257,35 @@ def get_resourcegroups_list(subscription_id, session=None, token=None, is_china=
 
     return resp.json()['value']
 
-def get_resourcegroup_by_name(subscription_id, resource_group_name, session=None, token=None, is_china=False):
+
+def get_resourcegroup_by_name(
+    subscription_id, resource_group_name, session=None, token=None, is_china=False
+):
     """Get ResourceGroup List
     
     GET https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}?api-version=2019-10-01
     """
     raise NotImplementedError()
 
+
 def async_get_resources(subscription_id, session, pool_size=20):
 
     from gevent.pool import Pool
+
     pool = Pool(pool_size)
 
     resources = []
     errors = []
     greenlets = []
-    
-    for item in get_resources_list(subscription_id, session=session, includes=PROVIDERS):
+
+    for item in get_resources_list(
+        subscription_id, session=session, includes=PROVIDERS
+    ):
         resource_id = item['id']
         try:
-            greenlets.append(pool.spawn(get_resource_by_id, resource_id, session=session))
+            greenlets.append(
+                pool.spawn(get_resource_by_id, resource_id, session=session)
+            )
         except Exception as err:
             msg = "fetch resource [%s] error : %s" % (resource_id, err)
             logger.error(msg)
@@ -272,82 +300,89 @@ def async_get_resources(subscription_id, session, pool_size=20):
 
     return resources, errors
 
+
 def options():
 
-    parser = argparse.ArgumentParser(description='Azure Exlorer',
-                                     formatter_class=argparse.RawTextHelpFormatter,
-                                     add_help=True)
-
-    parser.add_argument(
-        '--subscription', '-b', 
-        dest='subscription_id',
-        help='Subscription_id ID (provider format). Default: %(default)s',
-        default=DEFAULT_SUBSCRIPTION,
-        )#required=True)
-
-    parser.add_argument(
-        '--tenant', '-t', 
-        dest='tenant',
-        help='Tenant ID. Default: %(default)s',
-        default=DEFAULT_TENANT,
-        )#required=True)
-
-    parser.add_argument(
-        '--user', '-u', 
-        dest='user',
-        help='Client ID or Username. Default: %(default)s',
-        default=DEFAULT_USER,
-        )#required=True)
-
-    parser.add_argument(
-        '--password', '-p', 
-        dest='password',
-        help='Secret ID or Password.',
-        default=DEFAULT_PASSWORD,
-        )#required=True)
-
-    parser.add_argument(
-        '--resource-id', '-r',
-        dest='resource_id',
-        help='Get resource ID',
-        required=False
+    parser = argparse.ArgumentParser(
+        description='Azure Exlorer',
+        formatter_class=argparse.RawTextHelpFormatter,
+        add_help=True,
     )
 
     parser.add_argument(
-        '--china', 
+        '--subscription',
+        '-b',
+        dest='subscription_id',
+        help='Subscription_id ID (provider format). Default: %(default)s',
+        default=DEFAULT_SUBSCRIPTION,
+    )  # required=True)
+
+    parser.add_argument(
+        '--tenant',
+        '-t',
+        dest='tenant',
+        help='Tenant ID. Default: %(default)s',
+        default=DEFAULT_TENANT,
+    )  # required=True)
+
+    parser.add_argument(
+        '--user',
+        '-u',
+        dest='user',
+        help='Client ID or Username. Default: %(default)s',
+        default=DEFAULT_USER,
+    )  # required=True)
+
+    parser.add_argument(
+        '--password',
+        '-p',
+        dest='password',
+        help='Secret ID or Password.',
+        default=DEFAULT_PASSWORD,
+    )  # required=True)
+
+    parser.add_argument(
+        '--resource-id',
+        '-r',
+        dest='resource_id',
+        help='Get resource ID',
+        required=False,
+    )
+
+    parser.add_argument(
+        '--china',
         dest='is_china',
         help='China Subscription ?. Default: %(default)s',
         action='store_true',
         default=False,
-        required=False)
+        required=False,
+    )
+
+    parser.add_argument('--json', action="store_true")
+
+    parser.add_argument('--debug', action="store_true")
 
     parser.add_argument(
-        '--json', 
-        action="store_true")
-
-    parser.add_argument(
-        '--debug', 
-        action="store_true")
-
-    parser.add_argument(
-        '--command', '-C',
+        '--command',
+        '-C',
         choices=['get', 'list', 'group'],
         dest='command',
         help='Command',
-        required=True)
+        required=True,
+    )
 
     parser.add_argument(
-        '--export',
-        dest='export_json_file',
-        help='Export File',
-        required=False)
+        '--export', dest='export_json_file', help='Export File', required=False
+    )
 
     parser.add_argument(
-        '--expand', 
+        '--expand',
         action="store_true",
-        help='fetch all informations for each Resource. (for list command only)')
+        help='fetch all informations for each Resource. (for list command only)',
+    )
 
     return parser.parse_args()
+
 
 def main():
     args = options()
@@ -356,7 +391,7 @@ def main():
 
     if args.debug:
         logging_level = logging.DEBUG
-    
+
     logging.basicConfig(level=logging_level)
 
     subscription_id = args.subscription_id
@@ -364,51 +399,74 @@ def main():
     password = args.password
     tenant = args.tenant
     resource_id = args.resource_id
-    
+
     token = get_access_token(
-        subscription_id=subscription_id, 
-        user=user, 
-        password=password, 
-        tenant=tenant, 
-        is_china=False)
+        subscription_id=subscription_id,
+        user=user,
+        password=password,
+        tenant=tenant,
+        is_china=False,
+    )
 
     session = get_session(token=token['access_token'])
 
     start = time.time()
-    
+
     if args.command == "get" and resource_id:
         data = get_resource_by_id(resource_id, session=session)
         if args.json:
-             print(json.dumps(data, indent=4, escape_forward_slashes=False, ensure_ascii=False))
+            print(
+                json.dumps(
+                    data, indent=4, escape_forward_slashes=False, ensure_ascii=False
+                )
+            )
         else:
-             pprint(data)
+            pprint(data)
 
     elif args.command == "list":
 
-        if args.export_json_file:            
+        if args.export_json_file:
             with open(args.export_json_file, 'w') as fp:
-                
+
                 if args.expand:
                     datas = []
-                    
-                    for item in get_resources_list(subscription_id, session=session, includes=PROVIDERS):
+
+                    for item in get_resources_list(
+                        subscription_id, session=session, includes=PROVIDERS
+                    ):
                         try:
-                            datas.append(get_resource_by_id(item['id'], session=session))
+                            datas.append(
+                                get_resource_by_id(item['id'], session=session)
+                            )
                         except Exception as err:
                             msg = "fetch resource [%s] error : %s" % (item['id'], err)
                             logger.error(msg)
-                    
-                    json.dump(datas, fp, indent=4, escape_forward_slashes=False, ensure_ascii=False)
+
+                    json.dump(
+                        datas,
+                        fp,
+                        indent=4,
+                        escape_forward_slashes=False,
+                        ensure_ascii=False,
+                    )
                 else:
 
-                    resource_list = list(get_resources_list(
-                        subscription_id, 
-                        session=session, 
-                        includes=PROVIDERS
-                    ))
-                    json.dump(resource_list, fp, indent=4, escape_forward_slashes=False, ensure_ascii=False)
+                    resource_list = list(
+                        get_resources_list(
+                            subscription_id, session=session, includes=PROVIDERS
+                        )
+                    )
+                    json.dump(
+                        resource_list,
+                        fp,
+                        indent=4,
+                        escape_forward_slashes=False,
+                        ensure_ascii=False,
+                    )
         else:
-            for item in get_resources_list(subscription_id, session=session, includes=PROVIDERS):
+            for item in get_resources_list(
+                subscription_id, session=session, includes=PROVIDERS
+            ):
                 if args.expand:
                     item = get_resource_by_id(item['id'], session=session)
                 print('--------------------------------------------------------')
@@ -418,12 +476,17 @@ def main():
     elif args.command == "group":
         data = get_resourcegroups_list(subscription_id, session=session)
         if args.json:
-             print(json.dumps(data, indent=4, escape_forward_slashes=False, ensure_ascii=False))
+            print(
+                json.dumps(
+                    data, indent=4, escape_forward_slashes=False, ensure_ascii=False
+                )
+            )
         else:
-             pprint(data)
+            pprint(data)
 
     duration = time.time() - start
     logger.info("DURATION: %d" % duration)
+
 
 if __name__ == "__main__":
     main()
