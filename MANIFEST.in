@@ -1,0 +1,4 @@
+include README.rst
+include LICENSE
+recursive-include mce_azure *
+global-exclude *.pyc
