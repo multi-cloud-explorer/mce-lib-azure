@@ -3,8 +3,8 @@ import time
 from pprint import pprint
 import os
 import argparse
+import json
 
-import ujson as json
 import requests
 from decouple import config
 from dotenv import load_dotenv

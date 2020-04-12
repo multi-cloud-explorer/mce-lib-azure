@@ -8,7 +8,6 @@ install_requires = [
     'python-decouple',
     'python-dotenv',
     'requests',
-    'ujson',
     'azure-mgmt-resource'
 ]
 
