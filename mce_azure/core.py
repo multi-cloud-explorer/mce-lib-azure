@@ -81,7 +81,7 @@ def get_session(token=None):
 
 # TODO: retry paramètrable
 # TODO: renvoyer le ratelimit
-#@retry(tries=3, sleep_time=10)
+# @retry(tries=3, sleep_time=10)
 def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
     """Get Resource by ID
     
@@ -114,6 +114,7 @@ def get_tenant_list(session=None, token=None):
     """
     1 tenant pour plusieurs souscription
     """
+
 
 def get_subscriptions_list(session=None, token=None):
     """Get Subscriptions List
@@ -156,7 +157,6 @@ def get_resources_list(
             yield item
         else:
             logger.info("exclude type : %s" % item['type'].lower())
-
 
 
 def get_resourcegroups_list(subscription_id, session=None, token=None, is_china=False):
