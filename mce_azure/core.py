@@ -81,7 +81,7 @@ def get_session(token=None):
 
 # TODO: retry paramètrable
 # TODO: renvoyer le ratelimit
-@retry(tries=3, sleep_time=2)
+#@retry(tries=3, sleep_time=10)
 def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
     """Get Resource by ID
     
@@ -110,57 +110,10 @@ def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
     return resp.json()
 
 
-"""
-{
-  "value": [
-    {
-      "id": "/tenants/a70a1586-9c4a-4373-b907-1d310660dbd1",
-      "tenantId": "a70a1586-9c4a-4373-b907-1d310660dbd1",
-      "countryCode": "US",
-      "displayName": "Test_Test_aad50",
-      "domains": [
-        "aad50.ccsctp.net"
-      ],
-      "tenantCategory": "ManagedBy",
-      "defaultDomain": "aad50.ccsctp.net",
-      "tenantType": "AAD"
-    },
-"""
-
-
 def get_tenant_list(session=None, token=None):
     """
     1 tenant pour plusieurs souscription
     """
-
-
-"""
-{
-  "value": [
-    {
-      "id": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
-      "subscriptionId": "291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
-      "tenantId": "31c75423-32d6-4322-88b7-c478bdde4858",
-      "displayName": "Example Subscription",
-      "state": "Enabled",
-      "subscriptionPolicies": {
-        "locationPlacementId": "Internal_2014-09-01",
-        "quotaId": "Internal_2014-09-01",
-        "spendingLimit": "Off"
-      },
-      "authorizationSource": "RoleBased",
-      "managedByTenants": [
-        {
-          "tenantId": "8f70baf1-1f6e-46a2-a1ff-238dac1ebfb7"
-        }
-      ],
-      "tags": {
-        "tagKey1": "tagValue1",
-        "tagKey2": "tagValue2"
-      }
-    },
-"""
-
 
 def get_subscriptions_list(session=None, token=None):
     """Get Subscriptions List
@@ -204,32 +157,6 @@ def get_resources_list(
         else:
             logger.info("exclude type : %s" % item['type'].lower())
 
-
-"""
-https://docs.microsoft.com/fr-fr/azure/azure-resource-manager/management/request-limits-and-throttling
-    HTTP status code 429 Too many requests
-    The response includes a Retry-After value
-
-x-ms-ratelimit-remaining-subscription-reads	Requêtes de lecture restantes étendues à l’abonnement. Cette valeur est renvoyée pour les opérations de lecture.
-    az group list --verbose --debug
-x-ms-ratelimit-remaining-subscription-writes
-
-x-ms-ratelimit-remaining-tenant-reads
-x-ms-ratelimit-remaining-tenant-writes
-
-x-ms-ratelimit-remaining-subscription-resource-requests
-x-ms-ratelimit-remaining-subscription-resource-entities-read
-
-x-ms-ratelimit-remaining-tenant-resource-requests
-x-ms-ratelimit-remaining-tenant-resource-entities-read
-
-https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling
-Subscription	reads	12000
-Subscription	deletes	15000
-Subscription	writes	1200
-Tenant	reads	12000
-Tenant	writes	1200
-"""
 
 
 def get_resourcegroups_list(subscription_id, session=None, token=None, is_china=False):
