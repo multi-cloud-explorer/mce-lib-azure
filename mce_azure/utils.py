@@ -84,7 +84,7 @@ def retry(tries=3, sleep_time=2):
                         "retry %s - error[%s] - attempts[%s/%s]"
                         % (func, str(e), attempts, tries)
                     )
-                    if attempts > tries:
+                    if attempts >= tries:
                         raise e
                     time.sleep(sleep_time)
 
