@@ -50,7 +50,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/multi-cloud-explorer/mce-lib-azure.git',
     license='GPLv3+',
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests",)),
     include_package_data=True, 
     tests_require=tests_requires,
     install_requires=install_requires,
