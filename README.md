@@ -6,6 +6,7 @@ Librairie pour télécharger un inventaire des ressources d'une souscription Azu
 [![Build Status](https://travis-ci.org/multi-cloud-explorer/mce-lib-azure.svg)](https://travis-ci.org/multi-cloud-explorer/mce-lib-azure)
 [![Coverage Status](https://coveralls.io/repos/github/multi-cloud-explorer/mce-lib-azure/badge.svg?branch=master)](https://coveralls.io/github/multi-cloud-explorer/mce-lib-azure?branch=master)
 [![Code Health](https://landscape.io/github/multi-cloud-explorer/mce-lib-azure/master/landscape.svg?style=flat)](https://landscape.io/github/multi-cloud-explorer/mce-lib-azure/master)
+[![Requirements Status](https://requires.io/github/multi-cloud-explorer/mce-lib-azure/requirements.svg?branch=master)](https://requires.io/github/multi-cloud-explorer/mce-lib-azure/requirements/?branch=master)
 
 [Documentation](https://multi-cloud-explorer.readthedocs.org)
 
