@@ -18,8 +18,8 @@ install:
   - pip install coveralls
 
 script:
-  - black -S -t py37 --check mce_azure
-  - pytest
+  #- black -S -t py37 --check mce_azure
+  - coverage run -m pytest
 
 after_script:
   - coveralls
