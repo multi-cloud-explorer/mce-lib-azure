@@ -15,12 +15,14 @@ before_install:
 
 install:
   - pip install -e .[tests,dev]
-  - pip install coveralls
+  - pip install -U coveralls
+  - pip install -U codecov
 
 script:
   #- black -S -t py37 --check mce_azure
   - coverage run -m pytest
+  - coverage report -m
 
-after_script:
+after_success:
   - coveralls
-
+  - codecov
