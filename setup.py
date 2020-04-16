@@ -12,7 +12,7 @@ install_requires = [
 ]
 
 tests_requires = [
-    'pytest',
+    'pytest>=5.4.1',
     'pytest-cov',
     'pytest-pep8',
     'pytest-vcr',
@@ -29,7 +29,6 @@ dev_requires = [
     'ipython',
     'autopep8',
     'black',
-    'wheel',
 ]
 
 extras_requires = {
