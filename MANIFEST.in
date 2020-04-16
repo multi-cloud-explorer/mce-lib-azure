@@ -1,4 +1,4 @@
 include README.rst
 include LICENSE
-recursive-include mce_azure *
+include mce_azure/azure-providers.json
 global-exclude *.pyc
