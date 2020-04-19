@@ -12,13 +12,8 @@ Librairie pour télécharger un inventaire des ressources d'une souscription Azu
 
 ## Installation
 
-```shell
-git clone https://github.com/multi-cloud-explorer/mce-lib-azure.git
-cd mce-lib-azure
-python -m venv .venv
-source .venv/bin/activate
-pip install -U pip
-pip install .
+```bash
+pip install git+https://github.com/multi-cloud-explorer/mce-lib-azure.git
 ```
 
 ## Configure
@@ -32,7 +27,7 @@ export MCE_AZURE_PASSWORD='CHANGE_ME'
 
 ## Get a light version of all resources in subscription
 
-```shell
+```bash
 mce-az -C list --json --export resources-list.json
 ```
 
