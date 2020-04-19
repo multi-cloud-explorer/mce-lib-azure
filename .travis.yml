@@ -19,9 +19,7 @@ install:
   - pip install -U codecov
 
 script:
-  #- black -S -t py37 --check mce_azure
-  - coverage run -m pytest
-  - coverage report -m
+  - pytest
 
 after_success:
   - coveralls
