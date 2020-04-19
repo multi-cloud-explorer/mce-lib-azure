@@ -9,6 +9,12 @@ import requests
 from decouple import config
 from dotenv import load_dotenv
 
+try:
+    from gevent.pool import Pool    
+    GEVENT = True
+except Exception:
+    GEVENT = False
+
 from .utils import get_access_token, retry
 
 logger = logging.getLogger(__name__)
@@ -197,7 +203,8 @@ def get_resourcegroup_by_name(
 
 def async_get_resources(subscription_id, session, pool_size=20):
 
-    from gevent.pool import Pool
+    if not GEVENT:
+        raise Exception("gevent not available. install mce-lib-azure with pip install .[gevent]")
 
     pool = Pool(pool_size)
 

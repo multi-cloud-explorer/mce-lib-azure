@@ -1,3 +1,4 @@
+import pytest
 from unittest.mock import patch
 
 from mce_azure import core
@@ -33,3 +34,6 @@ def test_get_resource_by_id(mock_response_class, json_file):
         response = core.get_resource_by_id(resource_id, session=session)
         assert response == data
 
+@pytest.mark.skipif(core.GEVENT is False, reason="Gevent not available")
+def test_async_get_resources(mock_response_class, json_file):
+    raise NotImplementedError()

@@ -3,8 +3,6 @@ import os
 from setuptools import setup, find_packages
 
 install_requires = [
-    'gevent',
-    'gevent-openssl',
     'python-decouple',
     'python-dotenv',
     'requests',
@@ -34,6 +32,10 @@ dev_requires = [
 extras_requires = {
     'tests': tests_requires,
     'dev': dev_requires,
+    'gevent': [
+        'gevent',
+        'gevent-openssl',
+    ]
 }
 
 here = os.path.abspath(os.path.dirname(__file__))
