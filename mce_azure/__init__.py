@@ -1,3 +1,4 @@
+"""
 try:
     from gevent import monkey
     if not monkey.is_module_patched('socket'):
@@ -7,3 +8,4 @@ try:
         gevent_openssl.monkey_patch()
 except ModuleNotFoundError:
     pass
+"""

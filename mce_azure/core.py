@@ -10,7 +10,7 @@ from decouple import config
 from dotenv import load_dotenv
 
 try:
-    from gevent.pool import Pool    
+    from gevent.pool import Pool
     GEVENT = True
 except Exception:
     GEVENT = False
@@ -88,9 +88,9 @@ def get_session(token=None):
 # TODO: retry paramètrable
 # TODO: renvoyer le ratelimit
 # @retry(tries=3, sleep_time=10)
-def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
+def get_resource_by_id(resource_id, session=None, token=None, is_china=False, timeout=None):
     """Get Resource by ID
-    
+
     # TODO: doc args
 
     @see: https://docs.microsoft.com/en-us/rest/api/resources/resources/getbyid
@@ -105,7 +105,7 @@ def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
     url = f"{base_url}/{resource_id}?api-version={api_version}"
     session = session or get_session(token=token)
 
-    resp = session.get(url)
+    resp = session.get(url, timeout=timeout)
 
     rate_header, rate_value = get_ratelimit_header(resp.headers)
     msg = f"ratelimit : {rate_header}={rate_value} - {resource_id}"
@@ -116,28 +116,133 @@ def get_resource_by_id(resource_id, session=None, token=None, is_china=False):
     return resp.json()
 
 
-def get_tenant_list(session=None, token=None):
+def get_tenants_list(session=None, token=None, is_china=False, timeout=None):
     """
-    1 tenant pour plusieurs souscription
+    - 1 tenant pour plusieurs souscriptions
+    - voir souscription managedByTenants
+    https://docs.microsoft.com/en-us/rest/api/resources/tenants/list
+    [{
+      "id": "/tenants/a70a1586-9c4a-4373-b907-1d310660dbd1",
+      "tenantId": "a70a1586-9c4a-4373-b907-1d310660dbd1",
+      "countryCode": "US",
+      "displayName": "Test_Test_aad50",
+      "domains": [
+        "aad50.ccsctp.net"
+      ],
+      "tenantCategory": "ManagedBy",
+      "defaultDomain": "aad50.ccsctp.net",
+      "tenantType": "AAD"
+    }]
     """
+    base_url = get_azure_base_url(is_china=is_china)
+
+    api_version = PROVIDERS.get("Microsoft.Resources/tenants".lower())
+
+    url = f"{base_url}/tenants?api-version={api_version}"
+    session = session or get_session(token=token)
+
+    resp = session.get(url, timeout=timeout)
+    resp.raise_for_status()
+
+    return resp.json()['value']
 
 
-def get_subscriptions_list(session=None, token=None):
+def get_subscriptions_list(session=None, token=None, is_china=False, timeout=None):
     """Get Subscriptions List
 
-    @see: https://docs.microsoft.com/en-us/rest/api/resources/subscriptions/list
+    voir: https://docs.microsoft.com/en-us/rest/api/resources/subscriptions/list
+
+    [{
+      "id": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
+      "subscriptionId": "291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
+      "tenantId": "31c75423-32d6-4322-88b7-c478bdde4858",
+      "displayName": "Example Subscription",
+      "state": "Enabled",
+      "subscriptionPolicies": {
+        "locationPlacementId": "Internal_2014-09-01",
+        "quotaId": "Internal_2014-09-01",
+        "spendingLimit": "Off"
+      },
+      "authorizationSource": "RoleBased",
+      "managedByTenants": [
+        {
+          "tenantId": "8f70baf1-1f6e-46a2-a1ff-238dac1ebfb7"
+        }
+      ],
+      "tags": {
+        "tagKey1": "tagValue1",
+        "tagKey2": "tagValue2"
+      }
+    }]
 
     """
-    # https://docs.microsoft.com/en-us/rest/api/resources/subscriptions/listlocations
-    # api_version = PROVIDERS.get("Microsoft.Resources/resources".lower())
+    base_url = get_azure_base_url(is_china=is_china)
 
-    raise NotImplementedError()
+    api_version = PROVIDERS.get("Microsoft.Resources/subscriptions".lower())
+
+    url = f"{base_url}/subscriptions?api-version={api_version}"
+    session = session or get_session(token=token)
+
+    resp = session.get(url, timeout=timeout)
+    resp.raise_for_status()
+
+    return resp.json()['value']
+
+def get_regions_list(subscription_id, session=None, token=None, is_china=False, timeout=None):
+    """
+    # https://docs.microsoft.com/en-us/rest/api/resources/subscriptions/listlocations
+
+    [{
+        "id": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/locations/centralus",
+        "name": "centralus",
+        "displayName": "Central US",
+        "regionalDisplayName": "(US) Central US",
+        "metadata": {
+          "regionType": "Physical",
+          "regionCategory": "Recommended",
+          "geographyGroup": "US",
+          "longitude": "-93.6208",
+          "latitude": "41.5908",
+          "physicalLocation": "Iowa",
+          "pairedRegion": [
+            {
+              "name": "eastus2",
+              "id": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/locations/eastus2"
+            }
+          ]
+        }
+    }]
+
+    """
+    base_url = get_azure_base_url(is_china=is_china)
+
+    #api_version = PROVIDERS.get("Microsoft.Resources/subscriptions/locations".lower())
+    api_version = PROVIDERS.get("Microsoft.Resources/locations".lower())
+
+    url = f"{base_url}/subscriptions/{subscription_id}/locations?api-version={api_version}"
+    session = session or get_session(token=token)
+
+    resp = session.get(url, timeout=timeout)
+
+    rate_header, rate_value = get_ratelimit_header(resp.headers)
+    msg = f"ratelimit : {rate_header}={rate_value} - {subscription_id}"
+    logger.info(msg)
+
+    resp.raise_for_status()
+
+    global_region = {
+      "id": f"/subscriptions/{subscription_id}/locations/global",
+      "name": "global",
+      "displayName": "Global",
+      "longitude": "0.0",
+      "latitude": "0.0"
+    }
+
+    return resp.json()['value'] + [global_region]
 
 
 # TODO: filter type
-def get_resources_list(
-    subscription_id, session=None, token=None, is_china=False, includes=PROVIDERS
-):
+def get_resources_list(subscription_id, session=None, token=None, is_china=False, includes=PROVIDERS, timeout=None):
     """Get Resources List
 
     @see: https://docs.microsoft.com/en-us/rest/api/resources/resources/list
@@ -150,7 +255,7 @@ def get_resources_list(
     url = f"{base_url}/subscriptions/{subscription_id}/resources?api-version={api_version}"
     session = session or get_session(token=token)
 
-    resp = session.get(url)
+    resp = session.get(url, timeout=timeout)
 
     rate_header, rate_value = get_ratelimit_header(resp.headers)
     msg = f"ratelimit : {rate_header}={rate_value} - {subscription_id}"
@@ -165,9 +270,9 @@ def get_resources_list(
             logger.info("exclude type : %s" % item['type'].lower())
 
 
-def get_resourcegroups_list(subscription_id, session=None, token=None, is_china=False):
+def get_resourcegroups_list(subscription_id, session=None, token=None, is_china=False, timeout=None):
     """Get ResourceGroup List
-    
+
     https://docs.microsoft.com/en-us/rest/api/resources/resourcegroups/list
     """
 
@@ -180,7 +285,7 @@ def get_resourcegroups_list(subscription_id, session=None, token=None, is_china=
     url = f"{base_url}/subscriptions/{subscription_id}/resourcegroups?api-version={api_version}"
     session = session or get_session(token=token)
 
-    resp = session.get(url)
+    resp = session.get(url, timeout=timeout)
 
     rate_header, rate_value = get_ratelimit_header(resp.headers)
     msg = f"ratelimit : {rate_header}={rate_value} - {subscription_id}"
@@ -195,13 +300,13 @@ def get_resourcegroup_by_name(
     subscription_id, resource_group_name, session=None, token=None, is_china=False
 ):
     """Get ResourceGroup List
-    
+
     GET https://management.azure.com/subscriptions/{subscriptionId}/resourcegroups/{resourceGroupName}?api-version=2019-10-01
     """
     raise NotImplementedError()
 
 
-def async_get_resources(subscription_id, session, pool_size=20):
+def async_get_resources(subscription_id, session, pool_size=20, timeout=None):
 
     if not GEVENT:
         raise Exception("gevent not available. install mce-lib-azure with pip install .[gevent]")
@@ -218,7 +323,7 @@ def async_get_resources(subscription_id, session, pool_size=20):
         resource_id = item['id']
         try:
             greenlets.append(
-                pool.spawn(get_resource_by_id, resource_id, session=session)
+                pool.spawn(get_resource_by_id, resource_id, session=session, timeout=timeout)
             )
         except Exception as err:
             msg = "fetch resource [%s] error : %s" % (resource_id, err)

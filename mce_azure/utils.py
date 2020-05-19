@@ -14,8 +14,12 @@ class AuthenticationError(Exception):
 
 
 def get_access_token(
-    subscription_id=None, user=None, password=None, tenant=None, is_china=False
-):
+    subscription_id=None,
+    user=None,
+    password=None,
+    tenant=None,
+    is_china=False,
+    timeout=None):
     """
     Open Azure API session using AzureSDK and return Token
 
@@ -44,7 +48,7 @@ def get_access_token(
             credentials = UserPassCredentials(user, password, china=is_china)
         else:
             credentials = ServicePrincipalCredentials(
-                client_id=user, secret=password, tenant=tenant, china=is_china
+                client_id=user, secret=password, tenant=tenant, china=is_china, timeout=timeout
             )
     except Exception as e:
         msg = 'Login Azure FAILED with message : %s' % str(e)
